@@ -6,14 +6,23 @@ Vue.use(Vuex)
 const a = {
   namespaced: true,
   state: {
-    count: 0,
-    countA: 0
+    count: 0
+  },
+  mutations: {
+    increment (state) {
+      state.count++
+    }
   }
 }
 
 export default new Vuex.Store({
   state: {
     count: 0
+  },
+  mutations: {
+    increment (state) {
+      state.count++
+    }
   },
   modules: {
     a

@@ -6,8 +6,14 @@ let Vue
 export class Store {
   constructor (options = {}) {
     this._module = new ModuleCollection(options)
+    this._mutations = Object.create(null)
 
+    const store = this
     const state = this._module.root.state
+    const { commit } = this
+    this.commit = function (type, payload) {
+      return commit.call(store, type, payload)
+    }
 
     installModule(this, state, [], this._module.root)
 
@@ -16,6 +22,13 @@ export class Store {
 
   get state () {
     return this._vm._data.$$state
+  }
+
+  commit (type, payload) {
+    const entry = this._mutations[type]
+    entry.forEach(handler => {
+      handler(payload)
+    })
   }
 }
 
@@ -30,10 +43,21 @@ function installModule (store, rootState, path, module) {
   }
 
   const local = makeLocalContext(store, namespace, path)
-  console.log(local)
+
+  module.forEachMutation((mutation, key) => {
+    const namespaceType = namespace + key
+    registerMutation(store, namespaceType, mutation, local)
+  })
 
   forEachValue(module._children, (module, key) => {
     installModule(store, rootState, path.concat(key), module)
+  })
+}
+
+function registerMutation (store, type, handler, local) {
+  const entry = store._mutations[type] || (store._mutations[type] = [])
+  entry.push(function (payload) {
+    handler.call(store, local.state, payload)
   })
 }
 

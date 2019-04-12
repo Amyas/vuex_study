@@ -9,3 +9,5 @@
 ## 四、将childModule state递归添加到rootModule state
 
 ## 五、生成模块上下文
+
+## 六、根据模块上下文生成模块mutation并实现commit
