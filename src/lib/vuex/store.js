@@ -5,7 +5,23 @@ let Vue
 export class Store {
   constructor (options = {}) {
     this._module = new ModuleCollection(options)
+
+    const state = this._module.root.state
+
+    resetStoreVM(this, state)
   }
+
+  get state () {
+    return this._vm._data.$$state
+  }
+}
+
+function resetStoreVM (store, state) {
+  store._vm = new Vue({
+    data: {
+      $$state: state
+    }
+  })
 }
 
 export function install (_Vue) {

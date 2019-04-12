@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    123
+    <h3>rootModule state count:{{$store.state.count}}</h3>
   </div>
 </template>
 
