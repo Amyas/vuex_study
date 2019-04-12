@@ -21,6 +21,7 @@ export class Store {
 
 function installModule (store, rootState, path, module) {
   const isRoot = !path.length
+  const namespace = store._module.getNamespace(path)
 
   if (!isRoot) {
     const parentState = getNestedState(rootState, path.slice(0, -1))
@@ -28,9 +29,22 @@ function installModule (store, rootState, path, module) {
     Vue.set(parentState, moduleName, module.state)
   }
 
+  const local = makeLocalContext(store, namespace, path)
+  console.log(local)
+
   forEachValue(module._children, (module, key) => {
     installModule(store, rootState, path.concat(key), module)
   })
+}
+
+function makeLocalContext (store, namespace, path) {
+  const local = {}
+  Object.defineProperties(local, {
+    state: {
+      get: () => getNestedState(store.state, path)
+    }
+  })
+  return local
 }
 
 function getNestedState (state, path) {

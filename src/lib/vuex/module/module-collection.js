@@ -12,6 +12,14 @@ export default class ModuleCollection {
     }, this.root)
   }
 
+  getNamespace (path) {
+    let module = this.root
+    return path.reduce((namespace, key) => {
+      module = module.getChild(key)
+      return namespace + (module.namespaced ? key + '/' : '')
+    }, '')
+  }
+
   register (path, rawModule) {
     const newModule = new Module(rawModule)
 
