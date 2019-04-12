@@ -1,6 +1,11 @@
+import ModuleCollection from './module/module-collection'
+
 let Vue
 
 export class Store {
+  constructor (options = {}) {
+    this._module = new ModuleCollection(options)
+  }
 }
 
 export function install (_Vue) {

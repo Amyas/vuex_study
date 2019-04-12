@@ -3,4 +3,19 @@ import Vuex from './lib/vuex'
 
 Vue.use(Vuex)
 
-export default new Vuex.Store()
+const a = {
+  namespaced: true,
+  state: {
+    count: 0,
+    countA: 0
+  }
+}
+
+export default new Vuex.Store({
+  state: {
+    count: 0
+  },
+  modules: {
+    a
+  }
+})
