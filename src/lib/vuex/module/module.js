@@ -1,4 +1,4 @@
-import { forEachValue } from '../util';
+import { forEachValue } from '../util'
 
 export default class Module {
   constructor (rawModule) {
@@ -22,6 +22,12 @@ export default class Module {
   forEachMutation (fn) {
     if (this._rawModule.mutations) {
       forEachValue(this._rawModule.mutations, fn)
+    }
+  }
+
+  forEachAction (fn) {
+    if (this._rawModule.actions) {
+      forEachValue(this._rawModule.actions, fn)
     }
   }
 }

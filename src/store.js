@@ -11,6 +11,15 @@ const a = {
   mutations: {
     increment (state) {
       state.count++
+    },
+    changeValue (state, val) {
+      state.count = val
+    }
+  },
+  actions: {
+    changeValue ({ commit }, val) {
+      commit('changeValue', val)
+      return val
     }
   }
 }
@@ -22,9 +31,27 @@ export default new Vuex.Store({
   mutations: {
     increment (state) {
       state.count++
+    },
+    changeValue (state, val) {
+      state.count = val
+    }
+  },
+  actions: {
+    async changeValue ({ commit }, val) {
+      await delay(1000)
+      commit('changeValue', val)
+      return val
     }
   },
   modules: {
     a
   }
 })
+
+function delay (time) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve()
+    }, time)
+  })
+}

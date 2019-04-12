@@ -1,5 +1,5 @@
 import ModuleCollection from './module/module-collection'
-import { forEachValue } from './util'
+import { forEachValue, isPromise } from './util'
 
 let Vue
 
@@ -7,12 +7,16 @@ export class Store {
   constructor (options = {}) {
     this._module = new ModuleCollection(options)
     this._mutations = Object.create(null)
+    this._actions = Object.create(null)
 
     const store = this
     const state = this._module.root.state
-    const { commit } = this
+    const { commit, dispatch } = this
     this.commit = function (type, payload) {
       return commit.call(store, type, payload)
+    }
+    this.dispatch = function (type, payload) {
+      return dispatch.call(store, type, payload)
     }
 
     installModule(this, state, [], this._module.root)
@@ -29,6 +33,13 @@ export class Store {
     entry.forEach(handler => {
       handler(payload)
     })
+  }
+
+  dispatch (type, payload) {
+    const entry = this._actions[type]
+    return entry.length > 1
+      ? Promise.all(entry.map(handler => handler(payload)))
+      : entry[0](payload)
   }
 }
 
@@ -49,8 +60,31 @@ function installModule (store, rootState, path, module) {
     registerMutation(store, namespaceType, mutation, local)
   })
 
+  module.forEachAction((action, key) => {
+    const namespaceType = namespace + key
+    registerAction(store, namespaceType, action, local)
+  })
+
   forEachValue(module._children, (module, key) => {
     installModule(store, rootState, path.concat(key), module)
+  })
+}
+
+function registerAction (store, type, handler, local) {
+  const entry = store._actions[type] || (store._actions[type] = [])
+  entry.push(function (payload) {
+    let res = handler.call(store, {
+      dispatch: local.dispatch,
+      commit: local.commit,
+      state: local.state,
+      rootState: store.state
+    }, payload)
+
+    if (!isPromise(res)) {
+      res = Promise.resolve(res)
+    }
+
+    return res
   })
 }
 
@@ -62,7 +96,15 @@ function registerMutation (store, type, handler, local) {
 }
 
 function makeLocalContext (store, namespace, path) {
-  const local = {}
+  const noNamespace = namespace === ''
+  const local = {
+    dispatch: noNamespace
+      ? store.dispatch
+      : (type, payload) => store.dispatch(namespace + type, payload),
+    commit: noNamespace
+      ? store.commit
+      : (type, payload) => { store.commit(namespace + type, payload) }
+  }
   Object.defineProperties(local, {
     state: {
       get: () => getNestedState(store.state, path)

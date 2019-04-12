@@ -11,3 +11,5 @@
 ## 五、生成模块上下文
 
 ## 六、根据模块上下文生成模块mutation并实现commit
+
+## 七、修改模块上下文生成模块actions并实现dispatch
