@@ -30,4 +30,10 @@ export default class Module {
       forEachValue(this._rawModule.actions, fn)
     }
   }
+
+  forEachGetter (fn) {
+    if (this._rawModule.getters) {
+      forEachValue(this._rawModule.getters, fn)
+    }
+  }
 }

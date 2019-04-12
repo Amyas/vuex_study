@@ -1,9 +1,11 @@
 <template>
   <div id="app">
     <h3>rootModule state count:{{$store.state.count}}</h3>
+    <h3>rootModule state getter count:{{$store.getters.getterCount}}</h3>
     <button @click="$store.commit('increment')">rootModule state count increment</button>
     <button @click="handlerStateAsyncChange('changeValue', 10)">rootModule state count async increment</button>
     <h3>aModule state count:{{$store.state.a.count}}</h3>
+    <h3>aModule state getter count:{{$store.getters['a/getterCount']}}</h3>
     <button @click="$store.commit('a/increment')">aModule state count increment</button>
     <button @click="handlerStateAsyncChange('a/changeValue', 10)">aModule state count async increment</button>
   </div>

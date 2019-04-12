@@ -8,6 +8,7 @@ export class Store {
     this._module = new ModuleCollection(options)
     this._mutations = Object.create(null)
     this._actions = Object.create(null)
+    this._wrappedGetters = Object.create(null)
 
     const store = this
     const state = this._module.root.state
@@ -65,9 +66,23 @@ function installModule (store, rootState, path, module) {
     registerAction(store, namespaceType, action, local)
   })
 
+  module.forEachGetter((getter, key) => {
+    const namespaceType = namespace + key
+    registerGetter(store, namespaceType, getter, local)
+  })
+
   forEachValue(module._children, (module, key) => {
     installModule(store, rootState, path.concat(key), module)
   })
+}
+
+function registerGetter (store, type, rawGetter, local) {
+  store._wrappedGetters[type] = function (store) {
+    return rawGetter(
+      local.state,
+      store.state
+    )
+  }
 }
 
 function registerAction (store, type, handler, local) {
@@ -118,10 +133,21 @@ function getNestedState (state, path) {
 }
 
 function resetStoreVM (store, state) {
+  store.getters = {}
+  const wrappedGetters = store._wrappedGetters
+  const computed = {}
+  forEachValue(wrappedGetters, (wrappedGetter, key) => {
+    computed[key] = () => wrappedGetter(store)
+    Object.defineProperty(store.getters, key, {
+      get: () => store._vm[key],
+      enumerable: true
+    })
+  })
   store._vm = new Vue({
     data: {
       $$state: state
-    }
+    },
+    computed
   })
 }
 

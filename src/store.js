@@ -8,6 +8,9 @@ const a = {
   state: {
     count: 0
   },
+  getters: {
+    getterCount: state => state.count + 1
+  },
   mutations: {
     increment (state) {
       state.count++
@@ -27,6 +30,9 @@ const a = {
 export default new Vuex.Store({
   state: {
     count: 0
+  },
+  getters: {
+    getterCount: state => state.count + 1
   },
   mutations: {
     increment (state) {
