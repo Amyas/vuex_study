@@ -5,13 +5,13 @@ let Vue
 
 export class Store {
   constructor (options = {}) {
-    this._module = new ModuleCollection(options)
+    this._modules = new ModuleCollection(options)
     this._mutations = Object.create(null)
     this._actions = Object.create(null)
     this._wrappedGetters = Object.create(null)
 
     const store = this
-    const state = this._module.root.state
+    const state = this._modules.root.state
     const { commit, dispatch } = this
     this.commit = function (type, payload) {
       return commit.call(store, type, payload)
@@ -20,7 +20,7 @@ export class Store {
       return dispatch.call(store, type, payload)
     }
 
-    installModule(this, state, [], this._module.root)
+    installModule(this, state, [], this._modules.root)
 
     resetStoreVM(this, state)
   }
@@ -46,7 +46,7 @@ export class Store {
 
 function installModule (store, rootState, path, module) {
   const isRoot = !path.length
-  const namespace = store._module.getNamespace(path)
+  const namespace = store._modules.getNamespace(path)
 
   if (!isRoot) {
     const parentState = getNestedState(rootState, path.slice(0, -1))
