@@ -1,4 +1,5 @@
 import ModuleCollection from './module/module-collection'
+import { forEachValue } from './util'
 
 let Vue
 
@@ -8,12 +9,32 @@ export class Store {
 
     const state = this._module.root.state
 
+    installModule(this, state, [], this._module.root)
+
     resetStoreVM(this, state)
   }
 
   get state () {
     return this._vm._data.$$state
   }
+}
+
+function installModule (store, rootState, path, module) {
+  const isRoot = !path.length
+
+  if (!isRoot) {
+    const parentState = getNestedState(rootState, path.slice(0, -1))
+    const moduleName = path[path.length - 1]
+    Vue.set(parentState, moduleName, module.state)
+  }
+
+  forEachValue(module._children, (module, key) => {
+    installModule(store, rootState, path.concat(key), module)
+  })
+}
+
+function getNestedState (state, path) {
+  return path.reduce((state, key) => state[key], state)
 }
 
 function resetStoreVM (store, state) {
