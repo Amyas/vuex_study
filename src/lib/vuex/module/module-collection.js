@@ -1,6 +1,5 @@
 import Module from './module'
 import { forEachValue } from '../util'
-
 export default class ModuleCollection {
   constructor (rawRootModule) {
     this.register([], rawRootModule)
@@ -16,7 +15,7 @@ export default class ModuleCollection {
     let module = this.root
     return path.reduce((namespace, key) => {
       module = module.getChild(key)
-      return namespace + (module.namespaced ? key + '/' : '')
+      return namespace + module.namespaced ? key + '/' : ''
     }, '')
   }
 
@@ -27,8 +26,7 @@ export default class ModuleCollection {
       this.root = newModule
     } else {
       const parent = this.get(path.slice(0, -1))
-      const currentPath = path[path.length - 1]
-      parent.addChild(currentPath, newModule)
+      parent.addChild(path[path.length - 1], newModule)
     }
 
     if (rawModule.modules) {

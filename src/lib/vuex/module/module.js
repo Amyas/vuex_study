@@ -1,5 +1,4 @@
 import { forEachValue } from '../util'
-
 export default class Module {
   constructor (rawModule) {
     this._rawModule = rawModule
@@ -11,12 +10,12 @@ export default class Module {
     return !!this._rawModule.namespaced
   }
 
-  getChild (key) {
-    return this._children[key]
-  }
-
   addChild (key, module) {
     this._children[key] = module
+  }
+
+  getChild (key) {
+    return this._children[key]
   }
 
   forEachMutation (fn) {
@@ -35,5 +34,9 @@ export default class Module {
     if (this._rawModule.getters) {
       forEachValue(this._rawModule.getters, fn)
     }
+  }
+
+  forEachChild (fn) {
+    forEachValue(this._children, fn)
   }
 }

@@ -60,37 +60,32 @@ function installModule (store, rootState, path, module) {
     const namespaceType = namespace + key
     registerMutation(store, namespaceType, mutation, local)
   })
-
   module.forEachAction((action, key) => {
     const namespaceType = namespace + key
     registerAction(store, namespaceType, action, local)
   })
-
   module.forEachGetter((getter, key) => {
     const namespaceType = namespace + key
     registerGetter(store, namespaceType, getter, local)
   })
-
-  forEachValue(module._children, (module, key) => {
+  module.forEachChild((module, key) => {
     installModule(store, rootState, path.concat(key), module)
   })
 }
 
-function registerGetter (store, type, rawGetter, local) {
-  store._wrappedGetters[type] = function (store) {
-    return rawGetter(
-      local.state,
-      store.state
-    )
-  }
+function registerMutation (store, type, handler, local) {
+  const entry = store._mutations[type] || (store._mutations[type] = [])
+  entry.push(function (payload) {
+    handler.call(store, local.state, payload)
+  })
 }
 
 function registerAction (store, type, handler, local) {
   const entry = store._actions[type] || (store._actions[type] = [])
   entry.push(function (payload) {
     let res = handler.call(store, {
-      dispatch: local.dispatch,
       commit: local.commit,
+      dispatch: local.dispatch,
       state: local.state,
       rootState: store.state
     }, payload)
@@ -103,28 +98,33 @@ function registerAction (store, type, handler, local) {
   })
 }
 
-function registerMutation (store, type, handler, local) {
-  const entry = store._mutations[type] || (store._mutations[type] = [])
-  entry.push(function (payload) {
-    handler.call(store, local.state, payload)
-  })
+function registerGetter (store, type, rawGetter, local) {
+  store._wrappedGetters[type] = function (store) {
+    return rawGetter(
+      local.state,
+      store.state
+    )
+  }
 }
 
 function makeLocalContext (store, namespace, path) {
   const noNamespace = namespace === ''
+
   const local = {
-    dispatch: noNamespace
-      ? store.dispatch
-      : (type, payload) => store.dispatch(namespace + type, payload),
     commit: noNamespace
       ? store.commit
-      : (type, payload) => { store.commit(namespace + type, payload) }
+      : (type, payload) => { store.commit(namespace + type, payload) },
+    dispatch: noNamespace
+      ? store.dispatch
+      : (type, payload) => store.dispatch(namespace + type, payload)
   }
+
   Object.defineProperties(local, {
     state: {
       get: () => getNestedState(store.state, path)
     }
   })
+
   return local
 }
 
@@ -136,8 +136,8 @@ function resetStoreVM (store, state) {
   store.getters = {}
   const wrappedGetters = store._wrappedGetters
   const computed = {}
-  forEachValue(wrappedGetters, (wrappedGetter, key) => {
-    computed[key] = () => wrappedGetter(store)
+  forEachValue(wrappedGetters, (fn, key) => {
+    computed[key] = () => fn(store)
     Object.defineProperty(store.getters, key, {
       get: () => store._vm[key],
       enumerable: true
@@ -152,7 +152,7 @@ function resetStoreVM (store, state) {
 }
 
 export function install (_Vue) {
-  if (Vue && Vue === _Vue) return
+  if (Vue) return
   Vue = _Vue
   Vue.mixin({
     beforeCreate: function () {

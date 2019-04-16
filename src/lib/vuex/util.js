@@ -3,5 +3,5 @@ export function forEachValue (obj, fn) {
 }
 
 export function isPromise (val) {
-  return val && val.then === 'function'
+  return val && typeof val.then === 'function'
 }

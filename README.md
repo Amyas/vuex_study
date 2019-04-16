@@ -8,10 +8,14 @@
 
 ## 四、将childModule state递归添加到rootModule state
 
-## 五、生成模块上下文
+## 五、生成模块上下文(state)
 
 ## 六、根据模块上下文生成模块mutation并实现commit
 
 ## 七、修改模块上下文生成模块actions并实现dispatch
 
 ## 八、实现getters
+
+
+
+### 1.Vue.set
